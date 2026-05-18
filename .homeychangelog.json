@@ -7,5 +7,8 @@
   },
   "1.0.2": {
     "en": "Adds 'Media finished' trigger that fires when an item is watched ≥90% to completion, plus 'Playback idle for' and 'Any playback idle for' triggers with configurable duration in seconds or minutes. Adds live progress bar to the Now Playing widget with smooth interpolation between server updates. Device pairing now lists all devices known to Emby, not just those with active sessions. Recently Added widget no longer shows cast members or other library metadata. Paused sessions now have a 5-minute grace window before firing 'playback stopped', avoiding spurious triggers when Emby clients drop the connection during a pause."
+  },
+  "1.0.3": {
+    "en": "Adds community discussion link. Bug fix: Recently Added widget now correctly handles non-443 HTTPS ports."
   }
 }
