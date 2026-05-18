@@ -1,0 +1,12 @@
+{
+  "id": "is_device_online",
+  "title": { "en": "Emby device !{{is|is not}} online" },
+  "titleFormatted": { "en": "Emby device !{{is|is not}} online [[device]]" },
+  "args": [
+    {
+      "name": "device",
+      "type": "text",
+      "placeholder": { "en": "Lounge TV" }
+    }
+  ]
+}

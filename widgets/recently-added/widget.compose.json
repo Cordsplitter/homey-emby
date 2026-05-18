@@ -1,0 +1,26 @@
+{
+  "name": { "en": "Recently Added" },
+  "height": 280,
+  "settings": [
+    {
+      "id": "library",
+      "type": "text",
+      "title": { "en": "Library" },
+      "hint": { "en": "Enter a library name to filter, e.g. Movies. Leave blank for all libraries." },
+      "value": ""
+    },
+    {
+      "id": "limit",
+      "type": "number",
+      "title": { "en": "Number of items" },
+      "hint": { "en": "How many recently added items to show (default: 10)" },
+      "value": 10
+    }
+  ],
+  "api": {
+    "getItems": {
+      "method": "GET",
+      "path": "/items"
+    }
+  }
+}

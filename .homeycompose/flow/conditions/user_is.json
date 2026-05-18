@@ -1,0 +1,12 @@
+{
+  "id": "user_is",
+  "title": { "en": "Emby user !{{is|is not}} watching" },
+  "titleFormatted": { "en": "Emby user !{{is|is not}} [[user]]" },
+  "args": [
+    {
+      "name": "user",
+      "type": "text",
+      "placeholder": { "en": "David" }
+    }
+  ]
+}

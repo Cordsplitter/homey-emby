@@ -1,0 +1,50 @@
+{
+  "title": {
+    "en": "Media finished"
+  },
+  "hint": {
+    "en": "Fires when playback reaches the end of an item (watched ≥90%). Use this for end-of-movie automations."
+  },
+  "tokens": [
+    {
+      "name": "device",
+      "type": "string",
+      "title": { "en": "Device" }
+    },
+    {
+      "name": "title",
+      "type": "string",
+      "title": { "en": "Title" }
+    },
+    {
+      "name": "mediaType",
+      "type": "string",
+      "title": { "en": "Media Type" }
+    },
+    {
+      "name": "user",
+      "type": "string",
+      "title": { "en": "User" }
+    },
+    {
+      "name": "library",
+      "type": "string",
+      "title": { "en": "Library" }
+    },
+    {
+      "name": "season",
+      "type": "number",
+      "title": { "en": "Season" }
+    },
+    {
+      "name": "episode",
+      "type": "number",
+      "title": { "en": "Episode" }
+    },
+    {
+      "name": "episode_code",
+      "type": "string",
+      "title": { "en": "Episode Code" }
+    }
+  ]
+}

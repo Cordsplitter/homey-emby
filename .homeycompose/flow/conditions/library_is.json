@@ -1,0 +1,13 @@
+{
+  "id": "library_is",
+  "title": { "en": "Emby library !{{is|is not}} playing" },
+  "titleFormatted": { "en": "Emby library !{{is|is not}} [[library]]" },
+  "args": [
+    {
+      "name": "library",
+      "type": "text",
+      "placeholder": { "en": "Wrestling TV Shows" }
+    }
+  ]
+}
+ 

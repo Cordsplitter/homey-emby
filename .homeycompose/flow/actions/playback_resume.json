@@ -1,0 +1,12 @@
+{
+  "id": "playback_resume",
+  "title": { "en": "Resume playback" },
+  "titleFormatted": { "en": "Resume playback on [[device]]" },
+  "args": [
+    {
+      "name": "device",
+      "type": "text",
+      "placeholder": { "en": "Lounge TV" }
+    }
+  ]
+}

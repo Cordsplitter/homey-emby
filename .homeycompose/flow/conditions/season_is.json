@@ -1,0 +1,12 @@
+{
+  "id": "season_is",
+  "title": { "en": "Season !{{is|is not}} playing" },
+  "titleFormatted": { "en": "Season !{{is|is not}} [[season]]" },
+  "args": [
+    {
+      "name": "season",
+      "type": "number",
+      "placeholder": { "en": "1" }
+    }
+  ]
+}

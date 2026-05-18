@@ -1,0 +1,211 @@
+<html>
+<head>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body { height: 100%; overflow: hidden; }
+
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: var(--homey-su-3) var(--homey-su-3) var(--homey-su-2);
+      border-bottom: var(--homey-line);
+    }
+
+    .count-badge {
+      background: var(--homey-color-green);
+      color: white;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 20px;
+      min-width: 22px;
+      text-align: center;
+    }
+
+    .sessions {
+      overflow-y: auto;
+      max-height: calc(100% - 44px);
+    }
+
+    .session-row {
+      display: flex;
+      align-items: center;
+      gap: var(--homey-su-2);
+      padding: var(--homey-su-2) var(--homey-su-3);
+      border-bottom: var(--homey-line-light);
+    }
+    .session-row:last-child { border-bottom: none; }
+
+    .artwork {
+      width: 36px; height: 36px;
+      border-radius: var(--homey-border-radius-small);
+      background: var(--homey-background-color-secondary);
+      flex-shrink: 0;
+      overflow: hidden;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    .artwork img { width: 100%; height: 100%; object-fit: cover; }
+
+    .artwork-placeholder {
+      width: 16px; height: 16px;
+      background-color: var(--homey-icon-color-light);
+      -webkit-mask-image: url('tv-icon.svg');
+      mask-image: url('tv-icon.svg');
+      -webkit-mask-size: contain; mask-size: contain;
+      -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat;
+      -webkit-mask-position: center; mask-position: center;
+      opacity: 0.4;
+    }
+
+    .session-info { flex: 1; min-width: 0; }
+
+    .text-overflow {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .status-pill {
+      font-size: 9px;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 20px;
+      flex-shrink: 0;
+      margin-left: auto;
+      letter-spacing: 0.04em;
+    }
+
+    .status-playing {
+      background: rgba(82,181,75,0.15);
+      color: var(--homey-text-color-green, #52B54B);
+      border: 1px solid rgba(82,181,75,0.3);
+    }
+
+    .status-paused {
+      background: rgba(245,158,11,0.15);
+      color: var(--homey-text-color-orange, #f59e0b);
+      border: 1px solid rgba(245,158,11,0.3);
+    }
+
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 180px;
+      gap: var(--homey-su-2);
+    }
+
+    .empty-icon {
+      width: 36px; height: 36px;
+      background-color: var(--homey-icon-color-light);
+      -webkit-mask-image: url('tv-icon.svg');
+      mask-image: url('tv-icon.svg');
+      -webkit-mask-size: contain; mask-size: contain;
+      -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat;
+      -webkit-mask-position: center; mask-position: center;
+      opacity: 0.3;
+    }
+  </style>
+</head>
+<body class="homey-widget-full">
+
+  <div class="header">
+    <p class="homey-text-small" style="font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--homey-text-color-light);">What's On</p>
+    <div class="count-badge" id="countBadge">0</div>
+  </div>
+
+  <div class="sessions" id="sessions">
+    <div class="empty-state">
+      <div class="empty-icon"></div>
+      <p class="homey-text-small-light">Loading...</p>
+    </div>
+  </div>
+
+  <script type="text/javascript">
+    function onHomeyReady(Homey) {
+
+      var lastSessionsKey = '';
+
+      function fetchSessions() {
+        Homey.api('GET', '/sessions', {})
+          .then(function(data) {
+            document.getElementById('countBadge').textContent = data.count || 0;
+            var container = document.getElementById('sessions');
+
+            // Skip re-render if the session set is unchanged — avoids image-reload flicker
+            var key = (data.sessions || []).map(function(s) {
+              return s.device + '|' + s.title + '|' + (s.playing ? 'P' : 'p') + '|' + (s.paused ? 'A' : 'a');
+            }).join('||');
+            if (key === lastSessionsKey) return;
+            lastSessionsKey = key;
+
+            if (!data.sessions || data.sessions.length === 0) {
+              container.innerHTML =
+                '<div class="empty-state">' +
+                  '<div class="empty-icon"></div>' +
+                  '<p class="homey-text-small-light">Nothing playing</p>' +
+                '</div>';
+              return;
+            }
+
+            container.innerHTML = data.sessions.map(function(s, i) {
+              var statusCls = s.playing ? 'status-pill status-playing' : 'status-pill status-paused';
+              var statusTxt = s.playing ? 'PLAYING' : 'PAUSED';
+              var meta = s.device + (s.user ? ' · ' + s.user : '');
+              return '<div class="session-row">' +
+                '<div class="artwork" id="aw-' + i + '">' +
+                  '<div class="artwork-placeholder"></div>' +
+                '</div>' +
+                '<div class="session-info">' +
+                  '<p class="homey-text-medium text-overflow">' + (s.title || 'Unknown') + '</p>' +
+                  '<p class="homey-text-small-light text-overflow">' + meta + '</p>' +
+                '</div>' +
+                '<span class="' + statusCls + '">' + statusTxt + '</span>' +
+              '</div>';
+            }).join('');
+
+            // Load artwork using artworkUrl from API response (Art with Primary fallback)
+            data.sessions.forEach(function(s, i) {
+              if (!s.artworkUrl) return;
+              var artEl = document.getElementById('aw-' + i);
+              if (!artEl) return;
+
+              function show(src, onFail) {
+                var img = new Image();
+                img.onload = function() {
+                  artEl.innerHTML = '';
+                  img.style.width = '100%';
+                  img.style.height = '100%';
+                  img.style.objectFit = 'cover';
+                  artEl.appendChild(img);
+                };
+                img.onerror = onFail;
+                img.src = src;
+              }
+
+              show(s.artworkUrl, function() {
+                if (s.artworkUrlFallback) show(s.artworkUrlFallback, function() {});
+              });
+            });
+          })
+          .catch(function() {
+            document.getElementById('sessions').innerHTML =
+              '<div class="empty-state">' +
+                '<div class="empty-icon"></div>' +
+                '<p class="homey-text-small-light">Unable to connect</p>' +
+              '</div>';
+          });
+      }
+
+      Homey.on('state_update', fetchSessions);
+      fetchSessions();
+      Homey.ready();
+    }
+  </script>
+
+</body>
+</html>

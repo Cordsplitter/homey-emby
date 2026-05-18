@@ -1,0 +1,15 @@
+{
+  "id": "any_playback_started",
+  "title": { "en": "Playback started on any device" },
+  "tokens": [
+    { "name": "device",       "type": "string", "title": { "en": "Device" },          "example": { "en": "Lounge TV" } },
+    { "name": "count",        "type": "number", "title": { "en": "People watching" },  "example": 1 },
+    { "name": "title",        "type": "string", "title": { "en": "Title" },           "example": { "en": "Breaking Bad" } },
+    { "name": "mediaType",    "type": "string", "title": { "en": "Media type" },      "example": { "en": "TV Show" } },
+    { "name": "user",         "type": "string", "title": { "en": "User" },            "example": { "en": "David" } },
+    { "name": "library",      "type": "string", "title": { "en": "Library" },         "example": { "en": "TV" } },
+    { "name": "season",       "type": "number", "title": { "en": "Season number" },   "example": 1 },
+    { "name": "episode",      "type": "number", "title": { "en": "Episode number" },  "example": 6 },
+    { "name": "episode_code", "type": "string", "title": { "en": "Episode code" },    "example": { "en": "S01E06" } }
+  ]
+}

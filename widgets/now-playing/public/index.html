@@ -1,0 +1,390 @@
+<html>
+<head>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    .idle-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      gap: var(--homey-su-2);
+      padding: var(--homey-su-4);
+    }
+
+    .idle-icon {
+      width: 40px; height: 40px;
+      background-color: var(--homey-icon-color-light);
+      -webkit-mask-image: url('tv-icon.svg');
+      mask-image: url('tv-icon.svg');
+      -webkit-mask-size: contain; mask-size: contain;
+      -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat;
+      -webkit-mask-position: center; mask-position: center;
+      opacity: 0.5;
+    }
+
+    .playing-state { padding: var(--homey-su-3); }
+
+    .artwork-row {
+      display: flex;
+      gap: var(--homey-su-3);
+      align-items: center;
+      margin-bottom: var(--homey-su-3);
+    }
+
+    .artwork {
+      width: 72px; height: 72px;
+      border-radius: var(--homey-border-radius-default);
+      background: var(--homey-background-color-secondary);
+      flex-shrink: 0;
+      overflow: hidden;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    .artwork img { width: 100%; height: 100%; object-fit: cover; }
+
+    .artwork-placeholder {
+      width: 28px; height: 28px;
+      background-color: var(--homey-icon-color-light);
+      -webkit-mask-image: url('tv-icon.svg');
+      mask-image: url('tv-icon.svg');
+      -webkit-mask-size: contain; mask-size: contain;
+      -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat;
+      -webkit-mask-position: center; mask-position: center;
+      opacity: 0.4;
+    }
+
+    .info { flex: 1; min-width: 0; }
+
+    .device-row {
+      display: flex; align-items: center; gap: var(--homey-su-1);
+      margin-bottom: var(--homey-su-1);
+    }
+
+    .status-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--homey-color-green);
+      box-shadow: 0 0 4px var(--homey-color-green);
+      animation: pulse 2s infinite;
+      flex-shrink: 0;
+    }
+
+    .status-dot.paused {
+      background: var(--homey-color-orange);
+      box-shadow: 0 0 4px var(--homey-color-orange);
+      animation: none;
+    }
+
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+    .text-overflow {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .progress-block {
+      margin-bottom: var(--homey-su-2);
+    }
+    .progress-bar-bg {
+      height: 3px;
+      background: var(--homey-background-color-secondary);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+    .progress-bar-fill {
+      height: 3px;
+      background: var(--homey-color-green);
+      border-radius: 2px;
+    }
+    .progress-bar-fill.paused {
+      background: var(--homey-color-orange);
+    }
+    .progress-times {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 2px;
+    }
+    .progress-time {
+      font-size: 10px;
+      color: var(--homey-text-color-light);
+    }
+
+    .controls {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--homey-su-4);
+      padding-top: var(--homey-su-2);
+      border-top: var(--homey-line-light);
+    }
+
+    .ctrl-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      width: 44px; height: 44px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      transition: background 0.15s;
+    }
+
+    .ctrl-btn:hover { background: var(--homey-background-color-secondary); }
+    .ctrl-btn:disabled { opacity: 0.3; cursor: default; pointer-events: none; }
+
+    .ctrl-icon {
+      width: 22px; height: 22px;
+      background-color: var(--homey-icon-color-dark);
+      -webkit-mask-size: contain; mask-size: contain;
+      -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat;
+      -webkit-mask-position: center; mask-position: center;
+    }
+
+    .ctrl-btn.primary .ctrl-icon { width: 28px; height: 28px; }
+
+    .icon-play  { -webkit-mask-image: url('play-icon.svg');  mask-image: url('play-icon.svg'); }
+    .icon-pause { -webkit-mask-image: url('pause-icon.svg'); mask-image: url('pause-icon.svg'); }
+    .icon-stop  { -webkit-mask-image: url('stop-icon.svg');  mask-image: url('stop-icon.svg'); }
+  </style>
+</head>
+<body class="homey-widget">
+
+  <div class="idle-state" id="idleState">
+    <div class="idle-icon"></div>
+    <p class="homey-text-small-light" id="idleText">Nothing playing</p>
+  </div>
+
+  <div class="playing-state" id="playingState" style="display:none;">
+    <div class="artwork-row">
+      <div class="artwork" id="artworkEl">
+        <div class="artwork-placeholder"></div>
+      </div>
+      <div class="info">
+        <div class="device-row">
+          <span class="status-dot" id="statusDot"></span>
+          <span class="homey-text-small-light text-overflow" id="deviceNameEl"></span>
+        </div>
+        <p class="homey-text-bold text-overflow" style="margin-bottom:2px;" id="titleEl"></p>
+        <p class="homey-text-small-light text-overflow" style="margin-bottom:2px;" id="episodeEl"></p>
+        <p class="homey-text-small-light text-overflow" id="metaEl"></p>
+      </div>
+    </div>
+    <div class="progress-block" id="progressBlock" style="display:none;">
+      <div class="progress-bar-bg">
+        <div class="progress-bar-fill" id="progressBarFill" style="width:0%"></div>
+      </div>
+      <div class="progress-times">
+        <span class="progress-time" id="progressPosition">0:00</span>
+        <span class="progress-time" id="progressRuntime">0:00</span>
+      </div>
+    </div>
+    <div class="controls">
+      <button class="ctrl-btn" id="stopBtn" title="Stop">
+        <div class="ctrl-icon icon-stop"></div>
+      </button>
+      <button class="ctrl-btn primary" id="playPauseBtn" title="Play/Pause">
+        <div class="ctrl-icon icon-pause" id="playPauseIcon"></div>
+      </button>
+    </div>
+  </div>
+
+  <script type="text/javascript">
+    var currentDevice = '';
+    var isPlaying = false;
+    var supportsControl = false;
+    var currentArtworkUrl = '';
+
+    // Local position tracking — Emby only reports position every 5-10s, so we
+    // interpolate forwards between server updates and snap to authoritative values.
+    var positionAnchorSec = 0;        // position from last server update
+    var positionAnchorAt  = 0;        // wall-clock time of last server update (ms)
+    var currentRuntimeSec = 0;
+    var positionIsLive    = false;    // playing (advancing) vs paused (frozen)
+    var progressTickHandle = null;
+
+    function estimatedPositionSec() {
+      if (!positionIsLive) return positionAnchorSec;
+      var elapsed = (Date.now() - positionAnchorAt) / 1000;
+      return Math.min(currentRuntimeSec, positionAnchorSec + elapsed);
+    }
+
+    function renderProgress() {
+      if (currentRuntimeSec <= 0) return;
+      var pos = estimatedPositionSec();
+      var pct = Math.min(100, (pos / currentRuntimeSec) * 100);
+      document.getElementById('progressBarFill').style.width = pct + '%';
+      document.getElementById('progressPosition').textContent = formatTime(pos);
+    }
+
+    function startProgressTick() {
+      if (progressTickHandle) return;
+      progressTickHandle = setInterval(renderProgress, 500);
+    }
+
+    function stopProgressTick() {
+      if (progressTickHandle) {
+        clearInterval(progressTickHandle);
+        progressTickHandle = null;
+      }
+    }
+
+    function setArtwork(url, fallback) {
+      var artEl = document.getElementById('artworkEl');
+      if (!url) {
+        if (currentArtworkUrl !== '') {
+          artEl.innerHTML = '<div class="artwork-placeholder"></div>';
+          currentArtworkUrl = '';
+        }
+        return;
+      }
+      if (url === currentArtworkUrl) return;
+      currentArtworkUrl = url;
+
+      function show(src, onFail) {
+        var img = new Image();
+        img.onload = function() {
+          artEl.innerHTML = '';
+          img.style.width = '100%';
+          img.style.height = '100%';
+          img.style.objectFit = 'cover';
+          artEl.appendChild(img);
+        };
+        img.onerror = onFail;
+        img.src = src;
+      }
+
+      show(url, function() {
+        if (fallback) {
+          show(fallback, function() {
+            artEl.innerHTML = '<div class="artwork-placeholder"></div>';
+            currentArtworkUrl = '';
+          });
+        } else {
+          artEl.innerHTML = '<div class="artwork-placeholder"></div>';
+          currentArtworkUrl = '';
+        }
+      });
+    }
+
+    function showIdle(msg) {
+      document.getElementById('idleState').style.display = '';
+      document.getElementById('playingState').style.display = 'none';
+      document.getElementById('idleText').textContent = msg || 'Nothing playing';
+      document.getElementById('artworkEl').innerHTML = '<div class="artwork-placeholder"></div>';
+      currentArtworkUrl = '';
+      isPlaying = false;
+      stopProgressTick();
+      positionIsLive = false;
+    }
+
+    function formatTime(seconds) {
+      if (!seconds || seconds < 0) return '0:00';
+      var hours = Math.floor(seconds / 3600);
+      var mins  = Math.floor((seconds % 3600) / 60);
+      var secs  = Math.floor(seconds % 60);
+      if (hours > 0) {
+        return hours + ':' + String(mins).padStart(2, '0') + ':' + String(secs).padStart(2, '0');
+      }
+      return mins + ':' + String(secs).padStart(2, '0');
+    }
+
+    function showPlaying(Homey, state) {
+      document.getElementById('idleState').style.display = 'none';
+      document.getElementById('playingState').style.display = '';
+
+      isPlaying = state.playing;
+      supportsControl = state.supportsRemoteControl;
+
+      document.getElementById('statusDot').className = 'status-dot' + (state.paused ? ' paused' : '');
+      document.getElementById('deviceNameEl').textContent = currentDevice;
+      document.getElementById('titleEl').textContent = state.title || 'Unknown';
+
+      var ep = '';
+      if (state.season && state.episode) {
+        ep = 'S' + String(state.season).padStart(2,'0') + ' E' + String(state.episode).padStart(2,'0');
+      }
+      document.getElementById('episodeEl').textContent = ep;
+
+      var meta = [];
+      if (state.user) meta.push(state.user);
+      if (state.mediaType) meta.push(state.mediaType);
+      document.getElementById('metaEl').textContent = meta.join(' · ');
+
+      document.getElementById('playPauseIcon').className = 'ctrl-icon ' + (state.playing ? 'icon-pause' : 'icon-play');
+      document.getElementById('stopBtn').disabled = !supportsControl;
+      document.getElementById('playPauseBtn').disabled = !supportsControl;
+
+      // Progress bar — only shown when runtime is known
+      var progressBlock = document.getElementById('progressBlock');
+      if (state.runtimeSec > 0) {
+        progressBlock.style.display = '';
+
+        // Anchor the authoritative position. We snap on three events:
+        //  1. New track started (runtime changed)
+        //  2. Server position differs from estimate by >2s (correction)
+        //  3. Pause/play state changed
+        var stateChanged   = (state.playing && !positionIsLive) || (!state.playing && positionIsLive);
+        var runtimeChanged = state.runtimeSec !== currentRuntimeSec;
+        var drift = Math.abs(state.positionSec - estimatedPositionSec());
+        if (stateChanged || runtimeChanged || drift > 2) {
+          positionAnchorSec = state.positionSec;
+          positionAnchorAt  = Date.now();
+        }
+
+        currentRuntimeSec = state.runtimeSec;
+        positionIsLive    = state.playing;
+
+        document.getElementById('progressBarFill').className = 'progress-bar-fill' + (state.paused ? ' paused' : '');
+        document.getElementById('progressRuntime').textContent = formatTime(state.runtimeSec);
+
+        renderProgress();
+        if (state.playing) startProgressTick();
+        else stopProgressTick();
+      } else {
+        progressBlock.style.display = 'none';
+        stopProgressTick();
+      }
+
+      setArtwork(state.artworkUrl, state.artworkUrlFallback);
+    }
+
+    function onHomeyReady(Homey) {
+      var settings = Homey.getSettings();
+      currentDevice = (settings.device || '').trim();
+
+      if (!currentDevice) {
+        showIdle('No device configured');
+        Homey.ready();
+        return;
+      }
+
+      function fetchState() {
+        Homey.api('GET', '/state?device=' + encodeURIComponent(currentDevice), {})
+          .then(function(state) {
+            if (state.idle) showIdle('Nothing playing on ' + currentDevice);
+            else showPlaying(Homey, state);
+          })
+          .catch(function() { showIdle('Unable to connect'); });
+      }
+
+      document.getElementById('playPauseBtn').addEventListener('click', function() {
+        if (!supportsControl) return;
+        Homey.api('POST', '/command', { device: currentDevice, command: isPlaying ? 'Pause' : 'Unpause' }).catch(console.error);
+      });
+
+      document.getElementById('stopBtn').addEventListener('click', function() {
+        if (!supportsControl) return;
+        Homey.api('POST', '/command', { device: currentDevice, command: 'Stop' }).catch(console.error);
+      });
+
+      Homey.on('state_update', fetchState);
+      window._pollInterval = setInterval(fetchState, 5000);
+      fetchState();
+      Homey.ready();
+    }
+  </script>
+
+</body>
+</html>

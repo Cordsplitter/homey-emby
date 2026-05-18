@@ -1,0 +1,11 @@
+{
+  "name": { "en": "What's On" },
+  "height": 280,
+  "settings": [],
+  "api": {
+    "getSessions": {
+      "method": "GET",
+      "path": "/sessions"
+    }
+  }
+}

@@ -1,0 +1,6 @@
+scripts/
+*.code-workspace
+*.working.js
+*.zip
+.vscode/
+README.txt

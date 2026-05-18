@@ -1,0 +1,23 @@
+{
+  "name": { "en": "Now Playing" },
+  "height": 200,
+  "settings": [
+    {
+      "id": "device",
+      "type": "text",
+      "title": { "en": "Device Name" },
+      "hint": { "en": "Enter the Emby device name exactly, e.g. Lounge TV" },
+      "value": ""
+    }
+  ],
+  "api": {
+    "getState": {
+      "method": "GET",
+      "path": "/state"
+    },
+    "sendCommand": {
+      "method": "POST",
+      "path": "/command"
+    }
+  }
+}

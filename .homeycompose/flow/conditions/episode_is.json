@@ -1,0 +1,12 @@
+{
+  "id": "episode_is",
+  "title": { "en": "Episode !{{is|is not}} playing" },
+  "titleFormatted": { "en": "Episode !{{is|is not}} [[episode]]" },
+  "args": [
+    {
+      "name": "episode",
+      "type": "number",
+      "placeholder": { "en": "1" }
+    }
+  ]
+}

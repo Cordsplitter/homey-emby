@@ -1,0 +1,45 @@
+{
+  "title": {
+    "en": "Any playback idle"
+  },
+  "titleFormatted": {
+    "en": "Any playback idle for [[duration]] [[unit]]"
+  },
+  "hint": {
+    "en": "Fires when any device has been stopped for the specified duration."
+  },
+  "args": [
+    {
+      "name": "duration",
+      "type": "number",
+      "min": 1,
+      "max": 1440,
+      "placeholder": { "en": "10" }
+    },
+    {
+      "name": "unit",
+      "type": "dropdown",
+      "values": [
+        { "id": "seconds", "label": { "en": "seconds" } },
+        { "id": "minutes", "label": { "en": "minutes" } }
+      ]
+    }
+  ],
+  "tokens": [
+    {
+      "name": "device",
+      "type": "string",
+      "title": { "en": "Device" }
+    },
+    {
+      "name": "duration",
+      "type": "number",
+      "title": { "en": "Duration" }
+    },
+    {
+      "name": "unit",
+      "type": "string",
+      "title": { "en": "Unit" }
+    }
+  ]
+}

@@ -1,0 +1,30 @@
+{
+  "id": "com.emby",
+  "version": "1.0.1",
+  "compatibility": ">=12.4.0",
+  "sdk": 3,
+  "runtime": "nodejs",
+  "platforms": [
+    "local"
+  ],
+  "name": {
+    "en": "Emby"
+  },
+  "description": {
+    "en": "Receive notifications from Emby for Homey"
+  },
+  "category": [
+    "video"
+  ],
+  "permissions": [],
+  "images": {
+    "small": "/assets/images/small.png",
+    "large": "/assets/images/large.png",
+    "xlarge": "/assets/images/xlarge.png"
+  },
+  "brandColor": "#52B54B",
+  "author": {
+    "name": "David Lettice",
+    "email": "david@lettice.me"
+  }
+}

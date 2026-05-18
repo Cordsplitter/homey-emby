@@ -1,0 +1,12 @@
+{
+  "id": "is_playing",
+  "title": { "en": "Emby !{{is|is not}} playing on a device" },
+  "titleFormatted": { "en": "Emby !{{is|is not}} playing on [[device]]" },
+  "args": [
+    {
+      "name": "device",
+      "type": "text",
+      "placeholder": { "en": "Lounge TV" }
+    }
+  ]
+}

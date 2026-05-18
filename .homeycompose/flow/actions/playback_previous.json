@@ -1,0 +1,12 @@
+{
+  "id": "playback_previous",
+  "title": { "en": "Skip to previous" },
+  "titleFormatted": { "en": "Skip to previous on [[device]]" },
+  "args": [
+    {
+      "name": "device",
+      "type": "text",
+      "placeholder": { "en": "Lounge TV" }
+    }
+  ]
+}

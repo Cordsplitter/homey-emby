@@ -1,0 +1,12 @@
+{
+  "id": "is_user_active",
+  "title": { "en": "Emby user !{{is|is not}} active" },
+  "titleFormatted": { "en": "Emby user !{{is|is not}} active [[user]]" },
+  "args": [
+    {
+      "name": "user",
+      "type": "text",
+      "placeholder": { "en": "David" }
+    }
+  ]
+}

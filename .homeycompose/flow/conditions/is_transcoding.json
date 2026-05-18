@@ -1,0 +1,12 @@
+{
+  "id": "is_transcoding",
+  "title": { "en": "Emby !{{is|is not}} transcoding" },
+  "titleFormatted": { "en": "Emby !{{is|is not}} transcoding on [[device]]" },
+  "args": [
+    {
+      "name": "device",
+      "type": "text",
+      "placeholder": { "en": "Lounge TV" }
+    }
+  ]
+}

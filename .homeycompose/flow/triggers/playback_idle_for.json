@@ -1,0 +1,50 @@
+{
+  "title": {
+    "en": "Playback idle on a device"
+  },
+  "titleFormatted": {
+    "en": "Playback idle on [[device]] for [[duration]] [[unit]]"
+  },
+  "hint": {
+    "en": "Fires when a device has been stopped for the specified duration. Use this for end-of-viewing automations like dimming lights or turning off the TV."
+  },
+  "args": [
+    {
+      "name": "device",
+      "type": "text",
+      "placeholder": { "en": "Lounge TV" }
+    },
+    {
+      "name": "duration",
+      "type": "number",
+      "min": 1,
+      "max": 1440,
+      "placeholder": { "en": "10" }
+    },
+    {
+      "name": "unit",
+      "type": "dropdown",
+      "values": [
+        { "id": "seconds", "label": { "en": "seconds" } },
+        { "id": "minutes", "label": { "en": "minutes" } }
+      ]
+    }
+  ],
+  "tokens": [
+    {
+      "name": "device",
+      "type": "string",
+      "title": { "en": "Device" }
+    },
+    {
+      "name": "duration",
+      "type": "number",
+      "title": { "en": "Duration" }
+    },
+    {
+      "name": "unit",
+      "type": "string",
+      "title": { "en": "Unit" }
+    }
+  ]
+}

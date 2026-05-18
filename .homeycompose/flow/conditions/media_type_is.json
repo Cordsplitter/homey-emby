@@ -1,0 +1,17 @@
+{
+  "id": "media_type_is",
+  "title": { "en": "Media type !{{is|is not}} playing" },
+  "titleFormatted": { "en": "Media type !{{is|is not}} [[mediaType]]" },
+  "args": [
+    {
+      "name": "mediaType",
+      "type": "dropdown",
+      "values": [
+        { "id": "TV Show",     "label": { "en": "TV Show" } },
+        { "id": "Movie",       "label": { "en": "Movie" } },
+        { "id": "Music",       "label": { "en": "Music" } },
+        { "id": "Music Video", "label": { "en": "Music Video" } }
+      ]
+    }
+  ]
+}

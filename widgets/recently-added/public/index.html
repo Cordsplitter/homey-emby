@@ -1,0 +1,188 @@
+<html>
+<head>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      height: 100%;
+      overflow: hidden;
+    }
+
+    .scroll-container {
+      display: flex;
+      gap: var(--homey-su-3);
+      overflow-x: auto;
+      overflow-y: hidden;
+      height: 100%;
+      padding: 0 var(--homey-su-4);
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+      align-items: stretch;
+    }
+    .scroll-container::-webkit-scrollbar { display: none; }
+
+    .card {
+      flex-shrink: 0;
+      width: 140px;
+      display: flex;
+      flex-direction: column;
+      gap: var(--homey-su-2);
+      padding: var(--homey-su-2) 0;
+    }
+
+    .artwork {
+      flex: 1;
+      border-radius: var(--homey-border-radius-default);
+      background: var(--homey-background-color-secondary, rgba(128,128,128,0.15));
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 0;
+    }
+
+    .artwork img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .artwork-placeholder {
+      width: 32px; height: 32px;
+      background-color: var(--homey-icon-color-light);
+      -webkit-mask-image: url('tv-icon.svg');
+      mask-image: url('tv-icon.svg');
+      -webkit-mask-size: contain; mask-size: contain;
+      -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat;
+      -webkit-mask-position: center; mask-position: center;
+      opacity: 0.3;
+    }
+
+    .card-title {
+      font-size: var(--homey-font-size-small);
+      font-weight: var(--homey-font-weight-medium);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      flex-shrink: 0;
+    }
+
+    .card-meta {
+      font-size: 12px;
+      color: var(--homey-text-color-light);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      flex-shrink: 0;
+    }
+
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      gap: var(--homey-su-2);
+      padding: var(--homey-su-4);
+    }
+
+    .empty-icon {
+      width: 36px; height: 36px;
+      background-color: var(--homey-icon-color-light);
+      -webkit-mask-image: url('tv-icon.svg');
+      mask-image: url('tv-icon.svg');
+      -webkit-mask-size: contain; mask-size: contain;
+      -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat;
+      -webkit-mask-position: center; mask-position: center;
+      opacity: 0.3;
+    }
+  </style>
+</head>
+<body class="homey-widget-full">
+
+  <div id="content">
+    <div class="empty-state">
+      <div class="empty-icon"></div>
+      <p class="homey-text-small homey-text-color-light">Loading...</p>
+    </div>
+  </div>
+
+  <script type="text/javascript">
+    function onHomeyReady(Homey) {
+      var settings = Homey.getSettings();
+      var library  = settings.library || '';
+      var limit    = settings.limit   || 10;
+
+      function render(data) {
+        var container = document.getElementById('content');
+
+        if (!data.items || data.items.length === 0) {
+          container.innerHTML =
+            '<div class="empty-state">' +
+              '<div class="empty-icon"></div>' +
+              '<p class="homey-text-small homey-text-color-light">Nothing recently added</p>' +
+            '</div>';
+          return;
+        }
+
+        var scroll = '<div class="scroll-container">';
+        scroll += data.items.map(function(item) {
+          var meta = [item.mediaType, item.year].filter(Boolean).join(' · ');
+          return '<div class="card">' +
+            '<div class="artwork" id="art-' + item.id + '">' +
+              '<div class="artwork-placeholder"></div>' +
+            '</div>' +
+            '<div class="card-title">' + (item.title || 'Unknown') + '</div>' +
+            (meta ? '<div class="card-meta">' + meta + '</div>' : '') +
+          '</div>';
+        }).join('');
+        scroll += '</div>';
+
+        container.innerHTML = scroll;
+
+        // Load artwork
+        data.items.forEach(function(item) {
+          var artEl = document.getElementById('art-' + item.id);
+          if (!artEl || !item.imageUrl) return;
+          var img = new Image();
+          img.onload = function() {
+            artEl.innerHTML = '';
+            artEl.appendChild(img);
+          };
+          img.onerror = function() { /* keep placeholder */ };
+          img.src = item.imageUrl;
+          img.style.width  = '100%';
+          img.style.height = '100%';
+          img.style.objectFit = 'cover';
+        });
+      }
+
+      var lastItemsKey = '';
+
+      function fetchItems() {
+        Homey.api('GET', '/items?library=' + encodeURIComponent(library) + '&limit=' + limit, {})
+          .then(function(data) {
+            // Skip re-render if the item set is unchanged — avoids image-reload flicker
+            var key = (data.items || []).map(function(i) { return i.id; }).join('|');
+            if (key === lastItemsKey) return;
+            lastItemsKey = key;
+            render(data);
+          })
+          .catch(function() {
+            document.getElementById('content').innerHTML =
+              '<div class="empty-state">' +
+                '<div class="empty-icon"></div>' +
+                '<p class="homey-text-small homey-text-color-light">Unable to connect</p>' +
+              '</div>';
+          });
+      }
+
+      window._pollInterval = setInterval(fetchItems, 60000);
+      fetchItems();
+      Homey.ready();
+    }
+  </script>
+
+</body>
+</html>

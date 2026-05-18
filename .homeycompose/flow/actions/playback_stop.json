@@ -1,0 +1,12 @@
+{
+  "id": "playback_stop",
+  "title": { "en": "Stop playback" },
+  "titleFormatted": { "en": "Stop playback on [[device]]" },
+  "args": [
+    {
+      "name": "device",
+      "type": "text",
+      "placeholder": { "en": "Lounge TV" }
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "1.0.0": {
+    "en": "First version!"
+  },
+  "1.0.1": {
+    "en": "Initial public release. Adds Emby playback monitoring with 9 flow triggers, 11 conditions and 5 actions, three dashboard widgets (Now Playing, What's On, Recently Added), and configurable new-content notifications per library."
+  },
+  "1.0.2": {
+    "en": "Adds 'Media finished' trigger that fires when an item is watched ≥90% to completion, plus 'Playback idle for' and 'Any playback idle for' triggers with configurable duration in seconds or minutes. Adds live progress bar to the Now Playing widget with smooth interpolation between server updates. Device pairing now lists all devices known to Emby, not just those with active sessions. Recently Added widget no longer shows cast members or other library metadata. Paused sessions now have a 5-minute grace window before firing 'playback stopped', avoiding spurious triggers when Emby clients drop the connection during a pause."
+  }
+}

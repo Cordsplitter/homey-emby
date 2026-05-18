@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script type="text/javascript" src="/homey.js" data-origin="settings"></script>
+  <style>
+    .dot {
+      display: inline-block;
+      width: 9px; height: 9px;
+      border-radius: 50%;
+      background: #888;
+      margin-right: 8px;
+      vertical-align: middle;
+    }
+    .dot.connected  { background: #52B54B; box-shadow: 0 0 5px #52B54B; animation: pulse 2s infinite; }
+    .dot.error      { background: #ef4444; box-shadow: 0 0 5px #ef4444; }
+    .dot.connecting { background: #f59e0b; animation: pulse 1s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.35} }
+
+    .status-text { vertical-align: middle; font-weight: 500; }
+    .status-sub  { font-size: 12px; color: var(--homey-text-color-secondary); margin-top: 4px; }
+    .status-ver  { font-size: 12px; color: var(--homey-text-color-secondary); }
+
+    .badge {
+      font-size: 10px; font-weight: 700;
+      padding: 2px 8px; border-radius: 20px;
+      flex-shrink: 0; margin-left: auto;
+    }
+    .badge-playing { background: rgba(82,181,75,0.15); color: #52B54B; border: 1px solid rgba(82,181,75,0.3); }
+    .badge-paused  { background: rgba(245,158,11,0.15); color: #f59e0b; border: 1px solid rgba(245,158,11,0.3); }
+
+    .now-playing-card {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--homey-color-mono-100);
+    }
+    .now-playing-card:last-child { border-bottom: none; }
+
+    .save-feedback { font-size: 12px; color: #52B54B; margin-top: 8px; min-height: 16px; text-align: center; }
+  </style>
+</head>
+<body>
+
+  <header class="homey-header">
+    <h1 class="homey-title">Emby</h1>
+    <p class="homey-subtitle">Media server integration</p>
+  </header>
+
+  <form class="homey-form">
+
+    <!-- Connection status -->
+    <fieldset class="homey-form-fieldset">
+      <legend class="homey-form-legend">Connection</legend>
+      <div class="homey-form-group">
+        <div style="border: 1px solid rgba(128,128,128,0.5); border-radius: 8px; padding: 12px;">
+          <span class="dot" id="dot"></span>
+          <span class="status-text" id="statusLabel">Not configured</span>
+          <span class="status-ver" id="statusVer" style="float:right;display:none;"></span>
+          <div class="status-sub" id="statusSub"></div>
+        </div>
+      </div>
+    </fieldset>
+
+    <!-- Server settings -->
+    <fieldset class="homey-form-fieldset">
+      <legend class="homey-form-legend">Server Settings</legend>
+
+      <div class="homey-form-group">
+        <label class="homey-form-label" for="host">Host</label>
+        <input class="homey-form-input" type="text" id="host" placeholder="emby.example.com or 192.168.0.x" />
+      </div>
+
+      <div class="homey-form-group">
+        <label class="homey-form-label" for="port">Port</label>
+        <input class="homey-form-input" type="number" id="port" placeholder="443 / 8920 for HTTPS · 8096 for HTTP" />
+      </div>
+
+      <div class="homey-form-group">
+        <label class="homey-form-checkbox">
+          <input class="homey-form-checkbox-input" type="checkbox" id="useHttps">
+          <span class="homey-form-checkbox-checkmark"></span>
+          <span class="homey-form-checkbox-text">Use HTTPS</span>
+        </label>
+      </div>
+
+      <div class="homey-form-group">
+        <label class="homey-form-label" for="apiKey">API Key</label>
+        <input class="homey-form-input" type="password" id="apiKey" placeholder="Dashboard → Advanced → API Keys" />
+      </div>
+    </fieldset>
+
+    <!-- New content notifications -->
+    <fieldset class="homey-form-fieldset">
+      <legend class="homey-form-legend">New Content Notifications</legend>
+
+      <div class="homey-form-group">
+        <label class="homey-form-label" for="contentCheckInterval">Check Interval (minutes)</label>
+        <input class="homey-form-input" type="number" id="contentCheckInterval" placeholder="60" min="5" />
+      </div>
+
+      <div class="homey-form-group">
+        <fieldset class="homey-form-checkbox-set">
+          <legend class="homey-form-checkbox-set-title">Monitor Libraries</legend>
+          <div id="libraryList">
+            <p style="font-size:13px;color:var(--homey-text-color-secondary);">Connect to Emby to see libraries</p>
+          </div>
+        </fieldset>
+      </div>
+    </fieldset>
+
+    <!-- Now playing -->
+    <fieldset class="homey-form-fieldset" id="nowPlayingSection" style="display:none;">
+      <legend class="homey-form-legend">Now Playing</legend>
+      <div class="homey-form-group">
+        <div id="nowPlaying"></div>
+      </div>
+    </fieldset>
+
+    <!-- Save -->
+    <div class="homey-form-group">
+      <button type="button" class="homey-button-primary-full" id="saveBtn">Save Settings</button>
+      <div class="save-feedback" id="saveStatus"></div>
+    </div>
+
+  </form>
+
+  <script>
+    function onHomeyReady(Homey) {
+      var monitoredLibraries = [];
+      var availableLibraries = [];
+      var settingsLoaded = 0;
+
+      function setStatus(state, label, sub, ver) {
+        document.getElementById('dot').className = 'dot ' + (state || '');
+        document.getElementById('statusLabel').textContent = label || '';
+        document.getElementById('statusSub').textContent   = sub   || '';
+        var verEl = document.getElementById('statusVer');
+        if (ver) { verEl.textContent = ver; verEl.style.display = ''; }
+        else      { verEl.style.display = 'none'; }
+      }
+
+      function renderLibraries() {
+        var container = document.getElementById('libraryList');
+        if (!availableLibraries.length) {
+          container.innerHTML = '<p style="font-size:13px;color:var(--homey-text-color-secondary);">No libraries found</p>';
+          return;
+        }
+        container.innerHTML = availableLibraries.map(function(lib) {
+          var checked = monitoredLibraries.includes(lib.ItemId);
+          return '<label class="homey-form-checkbox">' +
+            '<input class="homey-form-checkbox-input" type="checkbox" data-id="' + lib.ItemId + '"' + (checked ? ' checked' : '') + '>' +
+            '<span class="homey-form-checkbox-checkmark"></span>' +
+            '<span class="homey-form-checkbox-text">' + lib.Name + '</span>' +
+          '</label>';
+        }).join('');
+
+        container.querySelectorAll('input[type="checkbox"]').forEach(function(cb) {
+          cb.addEventListener('change', function() {
+            var id = this.getAttribute('data-id');
+            if (this.checked) {
+              if (!monitoredLibraries.includes(id)) monitoredLibraries.push(id);
+            } else {
+              monitoredLibraries = monitoredLibraries.filter(function(i) { return i !== id; });
+            }
+          });
+        });
+      }
+
+      function baseUrl(h, p, https) {
+        var defaultPort = https ? 443 : 80;
+        var portPart = (p == defaultPort) ? '' : ':' + p;
+        return (https ? 'https' : 'http') + '://' + h + portPart;
+      }
+
+      function loadSessions(h, p, k, s) {
+        fetch(baseUrl(h, p, s) + '/Sessions?api_key=' + k)
+          .then(function(r) { return r.json(); })
+          .then(function(sessions) {
+            var playing = sessions.filter(function(s) {
+              return s.NowPlayingItem && s.PlayableMediaTypes && s.PlayableMediaTypes.length;
+            });
+            var sec = document.getElementById('nowPlayingSection');
+            if (!playing.length) { sec.style.display = 'none'; return; }
+            sec.style.display = '';
+            document.getElementById('nowPlaying').innerHTML = playing.map(function(s) {
+              var paused = s.PlayState && s.PlayState.IsPaused;
+              var title  = s.NowPlayingItem ? (s.NowPlayingItem.SeriesName || s.NowPlayingItem.Name || '') : '';
+              var icon   = (s.DeviceName || '').toLowerCase().indexOf('tv') !== -1 ? '📺' : '📱';
+              return '<div class="now-playing-card">' +
+                '<span style="font-size:18px;">' + icon + '</span>' +
+                '<div style="flex:1;min-width:0;">' +
+                  '<div style="font-size:14px;font-weight:500;">' + (s.DeviceName || '') + '</div>' +
+                  '<div style="font-size:12px;color:var(--homey-text-color-secondary);">' + title + (s.UserName ? ' · ' + s.UserName : '') + '</div>' +
+                '</div>' +
+                '<span class="badge ' + (paused ? 'badge-paused' : 'badge-playing') + '">' + (paused ? 'PAUSED' : 'PLAYING') + '</span>' +
+              '</div>';
+            }).join('');
+          }).catch(function() {});
+      }
+
+      function loadLibraries(h, p, k, s) {
+        fetch(baseUrl(h, p, s) + '/Library/VirtualFolders?api_key=' + k)
+          .then(function(r) { return r.json(); })
+          .then(function(libs) {
+            availableLibraries = libs || [];
+            renderLibraries();
+          }).catch(function() {});
+      }
+
+      function checkConnection() {
+        var h = document.getElementById('host').value.trim();
+        var p = parseInt(document.getElementById('port').value, 10) || 8096;
+        var k = document.getElementById('apiKey').value.trim();
+        var s = document.getElementById('useHttps').checked;
+        if (!h || !k) { setStatus('', 'Not configured', 'Enter host and API key above'); return; }
+        var displayHost = h + ((s && p == 443) || (!s && p == 80) ? '' : ':' + p);
+        setStatus('connecting', 'Connecting\u2026', displayHost);
+        fetch(baseUrl(h, p, s) + '/System/Info?api_key=' + k)
+          .then(function(r) { return r.json(); })
+          .then(function(data) {
+            setStatus('connected', 'Connected', displayHost, 'Emby ' + (data.Version || ''));
+            loadSessions(h, p, k, s);
+            loadLibraries(h, p, k, s);
+          })
+          .catch(function() {
+            setStatus('error', 'Cannot connect', displayHost);
+            document.getElementById('nowPlayingSection').style.display = 'none';
+          });
+      }
+
+      function onSettingLoaded() {
+        settingsLoaded++;
+        if (settingsLoaded >= 4) checkConnection();
+      }
+
+      Homey.get('host',                 function(e, v) { if (v) document.getElementById('host').value = v;   onSettingLoaded(); });
+      Homey.get('port',                 function(e, v) { if (v) document.getElementById('port').value = v;   onSettingLoaded(); });
+      Homey.get('apiKey',               function(e, v) { if (v) document.getElementById('apiKey').value = v; onSettingLoaded(); });
+      Homey.get('useHttps',             function(e, v) { document.getElementById('useHttps').checked = !!v;  onSettingLoaded(); });
+      Homey.get('contentCheckInterval', function(e, v) { document.getElementById('contentCheckInterval').value = v || 60; });
+      Homey.get('monitoredLibraries',   function(e, v) { monitoredLibraries = v || []; renderLibraries(); });
+
+      document.getElementById('saveBtn').addEventListener('click', function() {
+        var h = document.getElementById('host').value.trim();
+        var p = parseInt(document.getElementById('port').value, 10) || 8096;
+        var k = document.getElementById('apiKey').value.trim();
+        var i = parseInt(document.getElementById('contentCheckInterval').value, 10) || 60;
+        Homey.set('host',                 h);
+        Homey.set('port',                 p);
+        Homey.set('apiKey',               k);
+        Homey.set('useHttps',             document.getElementById('useHttps').checked);
+        Homey.set('contentCheckInterval', i);
+        Homey.set('monitoredLibraries',   monitoredLibraries);
+        document.getElementById('saveStatus').textContent = '\u2713 Settings saved';
+        setTimeout(function() { document.getElementById('saveStatus').textContent = ''; }, 2500);
+        checkConnection();
+      });
+
+      Homey.ready();
+    }
+  </script>
+
+</body>
+</html>

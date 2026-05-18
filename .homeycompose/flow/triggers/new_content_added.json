@@ -1,0 +1,27 @@
+{
+  "title": {
+    "en": "New content added to library"
+  },
+  "tokens": [
+    {
+      "name": "title",
+      "type": "string",
+      "title": { "en": "Title" }
+    },
+    {
+      "name": "library",
+      "type": "string",
+      "title": { "en": "Library" }
+    },
+    {
+      "name": "mediaType",
+      "type": "string",
+      "title": { "en": "Media Type" }
+    },
+    {
+      "name": "year",
+      "type": "string",
+      "title": { "en": "Year" }
+    }
+  ]
+}
