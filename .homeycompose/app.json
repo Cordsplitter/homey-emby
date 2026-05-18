@@ -1,6 +1,6 @@
 {
   "id": "com.emby",
-  "version": "1.0.1",
+  "version": "1.0.3",
   "compatibility": ">=12.4.0",
   "sdk": 3,
   "runtime": "nodejs",
@@ -11,7 +11,7 @@
     "en": "Emby"
   },
   "description": {
-    "en": "Receive notifications from Emby for Homey"
+    "en": "Integrate your Emby media server with Homey Pro. Monitor playback across all your devices, control players from Flow, get notified when new content is added to your libraries, and surface what's playing on your dashboard with three custom widgets."
   },
   "category": [
     "video"
@@ -24,7 +24,20 @@
   },
   "brandColor": "#52B54B",
   "author": {
-    "name": "David Lettice",
-    "email": "david@lettice.me"
-  }
+    "name": "David Lettice"
+  },
+  "contributors": {
+    "developers": [
+      {
+        "name": "David Lettice"
+      }
+    ]
+  },
+  "source": "https://github.com/Cordsplitter/homey-emby",
+  "homepage": "https://github.com/Cordsplitter/homey-emby",
+  "support": "https://github.com/Cordsplitter/homey-emby/issues",
+  "bugs": {
+    "url": "https://github.com/Cordsplitter/homey-emby/issues"
+  },
+  "homeyCommunityTopicId": 155044
 }
