@@ -36,7 +36,7 @@ Works with any Emby Server reachable from your Homey Pro over HTTP or HTTPS. For
 
 ## Author
 
-David Lettice — david@lettice.me
+David Lettice ([@Cordsplitter](https://github.com/Cordsplitter))
 
 ## License
 
